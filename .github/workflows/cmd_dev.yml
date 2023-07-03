@@ -3,7 +3,7 @@ name: Kuriimu2 CommandLine Dev
 on:
   push:
     branches:
-      - dev
+      - AUGHHH
 
 jobs:
   build:

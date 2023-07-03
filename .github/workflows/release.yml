@@ -3,7 +3,7 @@ name: Kuriimu2 Release
 on:
   push:
     branches:
-      - master
+      - AUGHHH
 
 jobs:
   build:
