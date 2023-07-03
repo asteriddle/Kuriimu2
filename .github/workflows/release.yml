@@ -64,36 +64,11 @@ jobs:
         mv ./dist/final/Eto/Wpf/Kuriimu2.EtoForms.Wpf.exe ./dist/final/Eto/Wpf/Kuriimu2.exe
         rm ./dist/final/Eto/Wpf/*.pdb
 
-    - name: Publish EtoForms for Linux
-      run: |
-        dotnet publish ./src/Kuriimu2.EtoForms/Kuriimu2.EtoForms.Gtk/Kuriimu2.EtoForms.Gtk.csproj --output ./dist/final/Eto/Gtk --configuration Release --framework netcoreapp31 --runtime linux-x64 /p:PublishSingleFile=true
-        mv ./dist/final/Eto/Gtk/Kuriimu2.EtoForms.Gtk ./dist/final/Eto/Gtk/Kuriimu2
-        rm ./dist/final/Eto/Gtk/*.pdb
-
-    - name: Publish EtoForms for Mac
-      run: |
-        dotnet publish ./src/Kuriimu2.EtoForms/Kuriimu2.EtoForms.Mac/Kuriimu2.EtoForms.Mac.csproj --configuration Release --framework netcoreapp31 --runtime osx-x64 /p:PublishSingleFile=true
-        mkdir ./dist/final/Eto/Mac
-        mv ./dist/Release/netcoreapp31/Kuriimu2.EtoForms.Mac.app ./dist/final/Eto/Mac/Kuriimu2.app
-        mv ./dist/final/Eto/Mac/Kuriimu2.app/Contents/MacOS/Kuriimu2.EtoForms.Mac ./dist/final/Eto/Mac/Kuriimu2.app/Contents/MacOS/Kuriimu2
-
     - name: Publish CommandLine for Windows
       run: |
         dotnet publish ./src/Kuriimu2.Cmd/Kuriimu2.Cmd.csproj --output ./dist/final/Cmd/Windows --configuration Release --framework netcoreapp31 --runtime win-x64 /p:PublishSingleFile=true
         mv ./dist/final/Cmd/Windows/Kuriimu2.Cmd.exe ./dist/final/Cmd/Windows/Kuriimu2.exe
         rm ./dist/final/Cmd/Windows/*.pdb
-
-    - name: Publish CommandLine for Linux
-      run: |
-        dotnet publish ./src/Kuriimu2.Cmd/Kuriimu2.Cmd.csproj --output ./dist/final/Cmd/Linux --configuration Release --framework netcoreapp31 --runtime linux-x64 /p:PublishSingleFile=true
-        mv ./dist/final/Cmd/Linux/Kuriimu2.Cmd ./dist/final/Cmd/Linux/Kuriimu2
-        rm ./dist/final/Cmd/Linux/*.pdb
-
-    - name: Publish CommandLine for Mac
-      run: |
-        dotnet publish ./src/Kuriimu2.Cmd/Kuriimu2.Cmd.csproj --output ./dist/final/Cmd/Mac --configuration Release --framework netcoreapp31 --runtime osx-x64 /p:PublishSingleFile=true
-        mv ./dist/final/Cmd/Mac/Kuriimu2.Cmd ./dist/final/Cmd/Mac/Kuriimu2
-        rm ./dist/final/Cmd/Mac/*.pdb
 
     # Publish libraries as nuget packages
     - name: Pack libraries
@@ -150,11 +125,7 @@ jobs:
     - name: Copy plugins to applications
       run: |
         xcopy /I .\dist\final\plugins .\dist\final\Eto\Wpf\plugins
-        xcopy /I .\dist\final\plugins .\dist\final\Eto\Gtk\plugins
-        xcopy /I .\dist\final\plugins .\dist\final\Eto\Mac\plugins
         xcopy /I .\dist\final\plugins .\dist\final\Cmd\Windows\plugins
-        xcopy /I .\dist\final\plugins .\dist\final\Cmd\Linux\plugins
-        xcopy /I .\dist\final\plugins .\dist\final\Cmd\Mac\plugins
       shell: cmd
 
     # Prepare release archives
@@ -164,35 +135,11 @@ jobs:
         files: ./dist/final/Eto/Wpf
         dest: ./update/Eto/Wpf/latest.zip
 
-    - name: Zip EtoForms Linux release
-      uses: vimtor/action-zip@v1
-      with:
-        files: ./dist/final/Eto/Gtk
-        dest: ./update/Eto/Gtk/latest.zip
-
-    - name: Zip EtoForms Mac release
-      uses: vimtor/action-zip@v1
-      with:
-        files: ./dist/final/Eto/Mac
-        dest: ./update/Eto/Mac/latest.zip
-
     - name: Zip Cmd Windows release
       uses: vimtor/action-zip@v1
       with:
         files: ./dist/final/Cmd/Windows
         dest: ./update/Cmd/Windows/latest.zip
-
-    - name: Zip Cmd Linux release
-      uses: vimtor/action-zip@v1
-      with:
-        files: ./dist/final/Cmd/Linux
-        dest: ./update/Cmd/Linux/latest.zip
-
-    - name: Zip Cmd Mac release
-      uses: vimtor/action-zip@v1
-      with:
-        files: ./dist/final/Cmd/Mac
-        dest: ./update/Cmd/Mac/latest.zip
 
     # Sign release packages
     - name: Install openSSL
@@ -205,11 +152,7 @@ jobs:
         echo "$PRIVATE_KEY_CMD" > cmd.pem
         echo "$PRIVATE_KEY_ETOFORMS" > etoforms.pem
         openssl dgst -sha512 -sign etoforms.pem -out ./update/Eto/Wpf/latest.sig ./update/Eto/Wpf/latest.zip
-        openssl dgst -sha512 -sign etoforms.pem -out ./update/Eto/Gtk/latest.sig ./update/Eto/Gtk/latest.zip
-        openssl dgst -sha512 -sign etoforms.pem -out ./update/Eto/Mac/latest.sig ./update/Eto/Mac/latest.zip
         openssl dgst -sha512 -sign cmd.pem -out ./update/Cmd/Windows/latest.sig ./update/Cmd/Windows/latest.zip
-        openssl dgst -sha512 -sign cmd.pem -out ./update/Cmd/Linux/latest.sig ./update/Cmd/Linux/latest.zip
-        openssl dgst -sha512 -sign cmd.pem -out ./update/Cmd/Mac/latest.sig ./update/Cmd/Mac/latest.zip
       shell: bash
       env:
         PRIVATE_KEY_CMD: ${{secrets.PRIVATE_KEY_CMD}}
@@ -224,11 +167,7 @@ jobs:
     - name: Move update files to update repos
       run: |
         mv -Force ./update/Eto/Wpf/* ./update_eto_repo/Wpf
-        mv -Force ./update/Eto/Gtk/* ./update_eto_repo/Gtk
-        mv -Force ./update/Eto/Mac/* ./update_eto_repo/Mac
         mv -Force ./update/Cmd/Windows/* ./update_cmd_repo/Windows
-        mv -Force ./update/Cmd/Linux/* ./update_cmd_repo/Linux
-        mv -Force ./update/Cmd/Mac/* ./update_cmd_repo/Mac
         
     - name: Commit releases to EtoForms update repository
       run: |
@@ -264,11 +203,7 @@ jobs:
     - name: Rename releases
       run: |
         mv ./update_eto_repo/Wpf/latest.zip ./update_eto_repo/Wpf/Kuriimu2_v${{ steps.set_version.outputs.prop }}_gui_win.zip
-        mv ./update_eto_repo/Gtk/latest.zip ./update_eto_repo/Gtk/Kuriimu2_v${{ steps.set_version.outputs.prop }}_gui_linux.zip
-        mv ./update_eto_repo/Mac/latest.zip ./update_eto_repo/Mac/Kuriimu2_v${{ steps.set_version.outputs.prop }}_gui_mac.zip
         mv ./update_cmd_repo/Windows/latest.zip ./update_cmd_repo/Windows/Kuriimu2_v${{ steps.set_version.outputs.prop }}_cmd_win.zip
-        mv ./update_cmd_repo/Linux/latest.zip ./update_cmd_repo/Linux/Kuriimu2_v${{ steps.set_version.outputs.prop }}_cmd_linux.zip
-        mv ./update_cmd_repo/Mac/latest.zip ./update_cmd_repo/Mac/Kuriimu2_v${{ steps.set_version.outputs.prop }}_cmd_mac.zip
 
     - name: Release
       uses: softprops/action-gh-release@v1
@@ -280,10 +215,6 @@ jobs:
         tag_name: ${{ steps.set_version.outputs.prop }}
         files: |
           update_eto_repo/Wpf/Kuriimu2_v${{ steps.set_version.outputs.prop }}_gui_win.zip
-          update_eto_repo/Gtk/Kuriimu2_v${{ steps.set_version.outputs.prop }}_gui_linux.zip
-          update_eto_repo/Mac/Kuriimu2_v${{ steps.set_version.outputs.prop }}_gui_mac.zip
           update_cmd_repo/Windows/Kuriimu2_v${{ steps.set_version.outputs.prop }}_cmd_win.zip
-          update_cmd_repo/Linux/Kuriimu2_v${{ steps.set_version.outputs.prop }}_cmd_linux.zip
-          update_cmd_repo/Mac/Kuriimu2_v${{ steps.set_version.outputs.prop }}_cmd_mac.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
